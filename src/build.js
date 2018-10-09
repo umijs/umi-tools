@@ -55,6 +55,10 @@ function getBabelConfig(isBrowser) {
   }
 }
 
+function addLastSlash(path) {
+  return path.slice(-1) === '/' ? path : `${path}/`;
+}
+
 function transform(opts = {}) {
   const { content, path, pkg, root } = opts;
   assert(content, `opts.content should be supplied for transform()`);
@@ -64,7 +68,7 @@ function transform(opts = {}) {
   assert(extname(path) === '.js', `extname of opts.path should be .js`);
 
   const { browserFiles } = pkg.umiTools || {};
-  const isBrowser = browserFiles && browserFiles.includes(slash(path).replace(`${slash(root)}/`, ''));
+  const isBrowser = browserFiles && browserFiles.includes(slash(path).replace(`${addLastSlash(slash(root))}`, ''));
   const babelConfig = getBabelConfig(isBrowser);
   signale.transform(
     chalk[isBrowser ? 'yellow' : 'blue'](
