@@ -97,11 +97,12 @@ function build(dir, opts = {}) {
     return vfs
       .src([
         src,
-        `!${join(srcDir, '**/fixtures')}`,
+        `!${join(srcDir, '**/fixtures/**/*')}`,
         `!${join(srcDir, '**/*.test.js')}`,
         `!${join(srcDir, '**/*.e2e.js')}`,
       ], {
         allowEmpty: true,
+        base: srcDir,
       })
       .pipe(through.obj((f, env, cb) => {
         if (extname(f.path) === '.js') {
