@@ -31,5 +31,9 @@
     "slash2": "^2.0.0",
     "through2": "^2.0.3",
     "vinyl-fs": "^3.0.3"
-  }
+  },
+  "files": [
+    "cli.js",
+    "src"
+  ]
 }
