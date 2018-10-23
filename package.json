@@ -8,9 +8,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/umijs/umi-tools/tree/master/packages/umi"
+    "url": "https://github.com/umijs/umi-tools"
   },
-  "homepage": "https://github.com/umijs/umi-tools/tree/master/packages/umi",
+  "homepage": "https://github.com/umijs/umi-tools",
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
   ],
