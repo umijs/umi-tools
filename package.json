@@ -17,6 +17,9 @@
   "bugs": {
     "url": "https://github.com/umijs/umi-tools/issues"
   },
+  "scripts":  {
+    "publish":  "np --no-cleanup --yolo"
+  },
   "dependencies": {
     "@babel/core": "^7.1.2",
     "@babel/plugin-proposal-class-properties": "^7.1.0",
@@ -37,5 +40,8 @@
   "files": [
     "cli.js",
     "src"
-  ]
+  ],
+  "devDependencies": {
+    "np": "^3.0.4"
+  }
 }
