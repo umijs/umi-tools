@@ -1,6 +1,6 @@
 {
   "name": "umi-tools",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "The tools used to build umi.",
   "license": "MIT",
   "bin": {
@@ -18,7 +18,7 @@
     "url": "https://github.com/umijs/umi-tools/issues"
   },
   "scripts": {
-    "publish": "np --no-cleanup --yolo"
+    "publish": "np --no-cleanup --yolo --no-yarn"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
