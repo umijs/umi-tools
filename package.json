@@ -18,7 +18,7 @@
     "url": "https://github.com/umijs/umi-tools/issues"
   },
   "scripts": {
-    "prepublish": "np --no-cleanup --yolo --no-publish"
+    "prepublishOnly": "np --no-cleanup --yolo --no-publish"
   },
   "dependencies": {
     "@babel/core": "^7.1.2",
