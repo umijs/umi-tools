@@ -98,6 +98,7 @@ function build(dir, opts = {}) {
       .src([
         src,
         `!${join(srcDir, '**/fixtures/**/*')}`,
+        `!${join(srcDir, '**/.umi/**/*')}`,
         `!${join(srcDir, '**/*.test.js')}`,
         `!${join(srcDir, '**/*.e2e.js')}`,
       ], {
