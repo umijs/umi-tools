@@ -1,6 +1,6 @@
 {
   "name": "umi-tools",
-  "version": "0.1.12",
+  "version": "0.2.0",
   "description": "The tools used to build umi.",
   "license": "MIT",
   "bin": {
