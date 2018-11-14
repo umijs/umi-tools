@@ -1,8 +1,9 @@
 const babel = require('@babel/core');
+const yParser = require('yargs-parser');
 const { join, extname } = require('path');
 const { existsSync, statSync, readdirSync } = require('fs');
 const assert = require('assert');
-const { Signale } = require('signale');
+const log = require('./utils/log');
 const slash = require('slash2');
 const chalk = require('chalk');
 const rimraf = require('rimraf');
@@ -11,25 +12,6 @@ const through = require('through2');
 const chokidar = require('chokidar');
 
 const cwd = process.cwd();
-const signale = new Signale({
-  types: {
-    transform: {
-      badge: '🎅',
-      color: 'blue',
-      label: 'transform',
-    },
-    pending: {
-      badge: '++',
-      color: 'magenta',
-      label: 'pending'
-    },
-    watch: {
-      badge: '**',
-      color: 'yellow',
-      label: 'watch'
-    },
-  }
-})
 
 function getBabelConfig(isBrowser) {
   const targets = isBrowser
@@ -70,7 +52,7 @@ function transform(opts = {}) {
   const { browserFiles } = pkg.umiTools || {};
   const isBrowser = browserFiles && browserFiles.includes(slash(path).replace(`${addLastSlash(slash(root))}`, ''));
   const babelConfig = getBabelConfig(isBrowser);
-  signale.transform(
+  log.transform(
     chalk[isBrowser ? 'yellow' : 'blue'](
       `${slash(path).replace(`${cwd}/`, '')}`,
     ),
@@ -126,13 +108,13 @@ function build(dir, opts = {}) {
   stream.on('end', () => {
     // watch
     if (watch) {
-      signale.pending('start watch', srcDir);
+      log.pending('start watch', srcDir);
       const watcher = chokidar.watch(join(cwd, srcDir), {
         ignoreInitial: true,
       });
       watcher.on('all', (event, fullPath) => {
         const relPath = fullPath.replace(join(cwd, srcDir), '');
-        signale.watch(`[${event}] ${join(srcDir, relPath)}`);
+        log.watch(`[${event}] ${join(srcDir, relPath)}`);
         if (!existsSync(fullPath)) return;
         if (statSync(fullPath).isFile()) {
           createStream(fullPath);
@@ -147,7 +129,8 @@ function isLerna(cwd) {
 }
 
 // Init
-const watch = process.argv.includes('-w') || process.argv.includes('--watch');
+const args = yParser(process.argv.slice(3));
+const watch = args.w || args.watch;
 if (isLerna(cwd)) {
   const dirs = readdirSync(join(cwd, 'packages'));
   dirs.forEach(pkg => {
@@ -155,7 +138,7 @@ if (isLerna(cwd)) {
     build(`./packages/${pkg}`, {
       cwd,
       watch,
-    })
+    });
   });
 } else {
   build('./', {

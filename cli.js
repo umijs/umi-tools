@@ -13,6 +13,7 @@ if (args.v || args.version) {
 switch (args._[0]) {
   case 'build':
   case 'test':
+  case 'rollup':
     require(`./src/${args._}`);
     break;
   default:
