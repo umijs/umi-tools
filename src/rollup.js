@@ -7,42 +7,48 @@ const nodeResolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const replace = require('rollup-plugin-replace');
 const log = require('./utils/log');
+const parseGlobals = require('./utils/parseGlobals');
 
 const env = process.env.NODE_ENV;
-
-const inputOptions = {
-  external: ['react', 'react-dom'],
-  plugins: [
-    nodeResolve({
-      jsnext: true,
-    }),
-    replace({
-      'process.env.NODE_ENV': JSON.stringify(env),
-    }),
-    commonjs(),
-  ],
-};
-
-const outputOptions = {
-  format: 'umd',
-  extend: true,
-  globals: {
-    'react': 'React',
-    'react-dom': 'ReactDOM',
-  },
-};
 
 function isLerna(cwd) {
   return existsSync(join(cwd, 'lerna.json'));
 }
 
 function build(dir, opts = {}) {
-  const { cwd, watch } = opts;
+  const { cwd, watch, globals = {} } = opts;
   assert(dir.charAt(0) !== '/', `dir should be relative`);
   assert(cwd, `opts.cwd should be supplied`);
 
   const pkgPath = join(cwd, dir, 'package.json');
   assert(existsSync(pkgPath), 'package.json should exists');
+
+  const inputOptions = {
+    external: [
+      'react',
+      'react-dom',
+      ...Object.keys(globals),
+    ],
+    plugins: [
+      nodeResolve({
+        jsnext: true,
+      }),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify(env),
+      }),
+      commonjs(),
+    ],
+  };
+
+  const outputOptions = {
+    format: 'umd',
+    extend: true,
+    globals: {
+      'react': 'React',
+      'react-dom': 'ReactDOM',
+      ...globals,
+    },
+  };
 
   const pkg = require(pkgPath);
   const { rollupFiles = [] } = pkg.umiTools || {};
@@ -81,6 +87,7 @@ function build(dir, opts = {}) {
 const cwd = process.cwd();
 const args = yParser(process.argv.slice(3));
 const watch = args.w || args.watch;
+const globals = parseGlobals(args.g || args.globals || '');
 if (isLerna(cwd)) {
   const dirs = readdirSync(join(cwd, 'packages'));
   dirs.forEach(pkg => {
@@ -88,11 +95,13 @@ if (isLerna(cwd)) {
     build(`./packages/${pkg}`, {
       cwd,
       watch,
+      globals,
     });
   });
 } else {
   build('./', {
     cwd,
     watch,
+    globals,
   });
 }
