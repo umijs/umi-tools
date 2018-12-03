@@ -12,6 +12,7 @@ const through = require('through2');
 const chokidar = require('chokidar');
 
 const cwd = process.cwd();
+let pkgCount = null;
 
 function getBabelConfig(isBrowser) {
   const targets = isBrowser
@@ -81,6 +82,7 @@ function build(dir, opts = {}) {
         src,
         `!${join(srcDir, '**/fixtures/**/*')}`,
         `!${join(srcDir, '**/.umi/**/*')}`,
+        `!${join(srcDir, '**/.umi-production/**/*')}`,
         `!${join(srcDir, '**/*.test.js')}`,
         `!${join(srcDir, '**/*.e2e.js')}`,
       ], {
@@ -106,6 +108,10 @@ function build(dir, opts = {}) {
   // build
   const stream = createStream(join(srcDir, '**/*'));
   stream.on('end', () => {
+    pkgCount -= 1;
+    if (pkgCount === 0) {
+      process.send('BUILD_COMPLETE');
+    }
     // watch
     if (watch) {
       log.pending('start watch', srcDir);
@@ -133,6 +139,7 @@ const args = yParser(process.argv.slice(3));
 const watch = args.w || args.watch;
 if (isLerna(cwd)) {
   const dirs = readdirSync(join(cwd, 'packages'));
+  pkgCount = dirs.length;
   dirs.forEach(pkg => {
     if (pkg.charAt(0) === '.') return;
     build(`./packages/${pkg}`, {
@@ -141,6 +148,7 @@ if (isLerna(cwd)) {
     });
   });
 } else {
+  pkgCount = 1;
   build('./', {
     cwd,
     watch,
