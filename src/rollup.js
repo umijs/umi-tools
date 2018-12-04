@@ -6,6 +6,7 @@ const { join } = require('path');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
 const replace = require('rollup-plugin-replace');
+const postcss = require('rollup-plugin-postcss');
 const log = require('./utils/log');
 const parseGlobals = require('./utils/parseGlobals');
 
@@ -37,6 +38,9 @@ function build(dir, opts = {}) {
         'process.env.NODE_ENV': JSON.stringify(env),
       }),
       commonjs(),
+      postcss({
+        extract: true
+      }),
     ],
   };
 
