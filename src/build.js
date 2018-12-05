@@ -138,10 +138,10 @@ function isLerna(cwd) {
 const args = yParser(process.argv.slice(3));
 const watch = args.w || args.watch;
 if (isLerna(cwd)) {
-  const dirs = readdirSync(join(cwd, 'packages'));
+  const dirs = readdirSync(join(cwd, 'packages'))
+    .filter(dir => dir.charAt(0) !== '.');
   pkgCount = dirs.length;
   dirs.forEach(pkg => {
-    if (pkg.charAt(0) === '.') return;
     build(`./packages/${pkg}`, {
       cwd,
       watch,
