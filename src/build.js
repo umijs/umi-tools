@@ -109,7 +109,7 @@ function build(dir, opts = {}) {
   const stream = createStream(join(srcDir, '**/*'));
   stream.on('end', () => {
     pkgCount -= 1;
-    if (pkgCount === 0) {
+    if (pkgCount === 0 && process.send) {
       process.send('BUILD_COMPLETE');
     }
     // watch
