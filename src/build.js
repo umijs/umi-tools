@@ -26,6 +26,7 @@ function getBabelConfig(isBrowser) {
         require.resolve('@babel/preset-env'),
         {
           targets,
+          ...(isBrowser ? { modules: false } : {}),
         },
       ],
       ...(isBrowser ? [require.resolve('@babel/preset-react')] : []),
