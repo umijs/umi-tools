@@ -91,7 +91,7 @@ function build(dir, opts = {}) {
         base: srcDir,
       })
       .pipe(through.obj((f, env, cb) => {
-        if (extname(f.path) === '.js') {
+        if (extname(f.path) === '.js' && !f.path.includes('/templates/')) {
           f.contents = Buffer.from(
             transform({
               content: f.contents,
