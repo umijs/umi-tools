@@ -1,6 +1,6 @@
 const babel = require('@babel/core');
 const yParser = require('yargs-parser');
-const { join, extname } = require('path');
+const { join, extname, sep } = require('path');
 const { existsSync, statSync, readdirSync } = require('fs');
 const assert = require('assert');
 const log = require('./utils/log');
@@ -91,7 +91,7 @@ function build(dir, opts = {}) {
         base: srcDir,
       })
       .pipe(through.obj((f, env, cb) => {
-        if (extname(f.path) === '.js' && !f.path.includes('/templates/')) {
+        if (extname(f.path) === '.js' && !f.path.includes(`${sep}templates${sep}`)) {
           f.contents = Buffer.from(
             transform({
               content: f.contents,
