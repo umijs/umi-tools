@@ -14,7 +14,7 @@ const chokidar = require('chokidar');
 const cwd = process.cwd();
 let pkgCount = null;
 
-function getBabelConfig(isBrowser) {
+function getBabelConfig(isBrowser, path) {
   const targets = isBrowser
     ? {
       browsers: ['last 2 versions', 'IE 10'],
@@ -22,6 +22,10 @@ function getBabelConfig(isBrowser) {
     : { node: 6 };
   return {
     presets: [
+      [
+        require.resolve('@babel/preset-typescript'),
+        {},
+      ],
       [
         require.resolve('@babel/preset-env'),
         {
@@ -49,17 +53,20 @@ function transform(opts = {}) {
   assert(path, `opts.path should be supplied for transform()`);
   assert(pkg, `opts.pkg should be supplied for transform()`);
   assert(root, `opts.root should be supplied for transform()`);
-  assert(extname(path) === '.js', `extname of opts.path should be .js`);
+  assert(['.js', '.ts'].includes(extname(path)), `extname of opts.path should be .js, .ts or .tsx`);
 
   const { browserFiles } = pkg.umiTools || {};
   const isBrowser = browserFiles && browserFiles.includes(slash(path).replace(`${addLastSlash(slash(root))}`, ''));
-  const babelConfig = getBabelConfig(isBrowser);
+  const babelConfig = getBabelConfig(isBrowser, path);
   log.transform(
     chalk[isBrowser ? 'yellow' : 'blue'](
       `${slash(path).replace(`${cwd}/`, '')}`,
     ),
   );
-  return babel.transform(content, babelConfig).code;
+  return babel.transform(content, {
+    ...babelConfig,
+    filename: path,
+  }).code;
 }
 
 function build(dir, opts = {}) {
@@ -91,7 +98,7 @@ function build(dir, opts = {}) {
         base: srcDir,
       })
       .pipe(through.obj((f, env, cb) => {
-        if (extname(f.path) === '.js' && !f.path.includes(`${sep}templates${sep}`)) {
+        if (['.js', '.ts'].includes(extname(f.path)) && !f.path.includes(`${sep}templates${sep}`)) {
           f.contents = Buffer.from(
             transform({
               content: f.contents,
@@ -100,6 +107,7 @@ function build(dir, opts = {}) {
               root: join(cwd, dir),
             }),
           );
+          f.path = f.path.replace(extname(f.path), '.js');
         }
         cb(null, f);
       }))
