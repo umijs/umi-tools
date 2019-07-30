@@ -17,7 +17,7 @@ function isLerna(cwd) {
 }
 
 function build(dir, opts = {}) {
-  const { cwd, watch, globals = {} } = opts;
+  const { cwd, watch, sourcemaps, globals = {} } = opts;
   assert(dir.charAt(0) !== '/', `dir should be relative`);
   assert(cwd, `opts.cwd should be supplied`);
 
@@ -46,6 +46,7 @@ function build(dir, opts = {}) {
 
   const outputOptions = {
     format: 'umd',
+    sourcemap: sourcemaps,
     extend: true,
     globals: {
       'react': 'React',
@@ -91,6 +92,7 @@ function build(dir, opts = {}) {
 const cwd = process.cwd();
 const args = yParser(process.argv.slice(3));
 const watch = args.w || args.watch;
+const sourcemaps = args.s || args['sourcemaps'];
 const globals = parseGlobals(args.g || args.globals || '');
 if (isLerna(cwd)) {
   const dirs = readdirSync(join(cwd, 'packages'));
@@ -99,6 +101,7 @@ if (isLerna(cwd)) {
     build(`./packages/${pkg}`, {
       cwd,
       watch,
+      sourcemaps,
       globals,
     });
   });
@@ -106,6 +109,7 @@ if (isLerna(cwd)) {
   build('./', {
     cwd,
     watch,
+    sourcemaps,
     globals,
   });
 }

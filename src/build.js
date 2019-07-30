@@ -8,6 +8,7 @@ const slash = require('slash2');
 const chalk = require('chalk');
 const rimraf = require('rimraf');
 const vfs = require('vinyl-fs');
+const applySourceMap = require('vinyl-sourcemaps-apply');
 const through = require('through2');
 const chokidar = require('chokidar');
 
@@ -48,7 +49,7 @@ function addLastSlash(path) {
 }
 
 function transform(opts = {}) {
-  const { content, path, pkg, root } = opts;
+  const { content, path, pkg, root, sourcemaps } = opts;
   assert(content, `opts.content should be supplied for transform()`);
   assert(path, `opts.path should be supplied for transform()`);
   assert(pkg, `opts.pkg should be supplied for transform()`);
@@ -63,14 +64,16 @@ function transform(opts = {}) {
       `${slash(path).replace(`${cwd}/`, '')}`,
     ),
   );
-  return babel.transform(content, {
+  const res = babel.transform(content, {
     ...babelConfig,
     filename: path,
-  }).code;
+    sourceMaps: sourcemaps,
+  });
+  return res;
 }
 
 function build(dir, opts = {}) {
-  const { cwd, watch } = opts;
+  const { cwd, watch, sourcemaps } = opts;
   assert(dir.charAt(0) !== '/', `dir should be relative`);
   assert(cwd, `opts.cwd should be supplied`);
 
@@ -97,21 +100,28 @@ function build(dir, opts = {}) {
         allowEmpty: true,
         base: srcDir,
       })
-      .pipe(through.obj((f, env, cb) => {
+      .pipe(through.obj(function(f, env, cb) {
         if (['.js', '.ts'].includes(extname(f.path)) && !f.path.includes(`${sep}templates${sep}`)) {
-          f.contents = Buffer.from(
-            transform({
-              content: f.contents,
-              path: f.path,
-              pkg,
-              root: join(cwd, dir),
-            }),
-          );
-          f.path = f.path.replace(extname(f.path), '.js');
+          const fpath = f.path.replace(extname(f.path), '.js');
+          const { code, map } = transform({
+            content: f.contents,
+            path: f.path,
+            pkg,
+            root: join(cwd, dir),
+            sourcemaps,
+          });
+
+          if (map) {
+            map.file = fpath;
+            applySourceMap(f, map);
+          }
+
+          f.contents = Buffer.from(code);
+          f.path = fpath;
         }
         cb(null, f);
       }))
-      .pipe(vfs.dest(libDir));
+      .pipe(vfs.dest(libDir, { sourcemaps: '.' }));
   }
 
   // build
@@ -146,6 +156,7 @@ function isLerna(cwd) {
 // Init
 const args = yParser(process.argv.slice(3));
 const watch = args.w || args.watch;
+const sourcemaps = args.s || args['sourcemaps'];
 if (isLerna(cwd)) {
   const dirs = readdirSync(join(cwd, 'packages'))
     .filter(dir => dir.charAt(0) !== '.');
@@ -154,6 +165,7 @@ if (isLerna(cwd)) {
     build(`./packages/${pkg}`, {
       cwd,
       watch,
+      sourcemaps,
     });
   });
 } else {
@@ -161,5 +173,6 @@ if (isLerna(cwd)) {
   build('./', {
     cwd,
     watch,
+    sourcemaps,
   });
 }
