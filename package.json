@@ -35,7 +35,7 @@
     "through2": "3.0.0",
     "umi-test": "^1.2.0",
     "vinyl-fs": "^3.0.3",
-    "yargs-parser": "13.0.0"
+    "yargs-parser": "19.0.4"
   },
   "files": [
     "cli.js",
